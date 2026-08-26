@@ -10,7 +10,7 @@ metadata:
     team: platform
 
 spec:
-  project: default
+  project: development
 
   source:
     repoURL: https://github.com/Sndp-VK/eks-gitops-pipeline

@@ -1,0 +1,71 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: development
+  namespace: argocd
+
+spec:
+  description: Development environment — developers have full sync access
+
+  sourceRepos:
+    - 'https://github.com/GreetaPearlNuvepro/eks-gitops-pipeline'
+
+  destinations:
+    - namespace: order-service-dev
+      server: https://kubernetes.default.svc
+
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+
+  roles:
+    - name: developer
+      description: Developer role — can sync dev apps
+
+      policies:
+        - p, proj:development:developer, applications, get, development/*, allow
+        - p, proj:development:developer, applications, sync, development/*, allow
+        - p, proj:development:developer, applications, create, development/*, allow
+
+      groups:
+        - github-org:developers
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: production
+  namespace: argocd
+
+spec:
+  description: Production environment — restricted to platform team only
+
+  sourceRepos:
+    - 'https://github.com/GreetaPearlNuvepro/eks-gitops-pipeline'
+
+  destinations:
+    - namespace: order-service-prod
+      server: https://kubernetes.default.svc
+
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+
+  roles:
+    - name: platform-engineer
+      description: Platform team — full production access
+
+      policies:
+        - p, proj:production:platform-engineer, applications, *, production/*, allow
+
+      groups:
+        - github-org:platform-team
+
+    - name: developer
+      description: Developers — read-only production access
+
+      policies:
+        - p, proj:production:developer, applications, get, production/*, allow
+
+      groups:
+        - github-org:developers
